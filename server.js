@@ -1,11 +1,4 @@
 /*
-AS A business owner
-I WANT to be able to view and manage the departments, roles, and employees in my company
-SO THAT I can organize and plan my business
-
-GIVEN a command-line application that accepts user input
-WHEN I start the application
-THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
 WHEN I choose to view all departments
 THEN I am presented with a formatted table showing department names and department ids
 WHEN I choose to view all roles
@@ -22,19 +15,20 @@ WHEN I choose to update an employee role
 THEN I am prompted to select an employee to update and their new role and this information is updated in the database */
 
 const inquirer = require('inquirer'); // import 3rd-party module
-const db = require('./db/connection'); // import utility module
+// const db = require('./db/connection'); // import utility module
 const routeUserSelection = require('./utils/routeUserSelection'); // import utility module
 
 
-const optionsOnStart = [
+const userOptions = [
     // initialInput
     {
         type: 'list',
         name: 'userInput',
         message: 'Welcome to the Content Management System. What would you like to do?',
         choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee\'s role',],
-        default: 'View all employees'
-    }
+        default: 'View all departments'
+    },
+
 ]
 
 const managerQuestions = [
@@ -283,24 +277,22 @@ const managerQuestions = [
 ];
 
 function startInquirer() {
-    return inquirer.prompt(optionsOnStart);
+    return inquirer.prompt(userOptions);
 }
 
-/* startInquirer()
+// startInquirer returns a Promise object, to which we chain a .then() method
+startInquirer()
 .then( userSelectionObject => {
     let { userInput } = userSelectionObject;
-    console.log('userInput is:', userInput);
     routeUserSelection(userInput);
-}); */
-
-
-db.connect( err => {
-    if (err) {
-        console.error('There has been an error connecting: ', err);
-        return;
-    }
-    console.log('Connected succesfully to database');
+})
+.catch((error) => {
+    console.log('Something didnt work out', error);
 });
+
+module.exports = {
+    startInquirer
+};
 
 
 /* inquirer
