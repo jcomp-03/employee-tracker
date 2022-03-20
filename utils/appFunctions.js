@@ -169,6 +169,8 @@ function addADepartment() {
 }
 
 function addARole() {
+    const existingDepartments = getCurrentDepartmentNames();
+
     inquirer.prompt([
         {
             type: 'input',
@@ -207,7 +209,7 @@ function addARole() {
             type: 'list',
             name: 'newRoleDepartment',
             message: 'To which department does this role belong?',
-            choices: getCurrentDepartmentNames(),
+            choices: existingDepartments,
             when: ( { newRoleTitle } ) => {
                 if (newRoleTitle) {
                     return true;
@@ -258,8 +260,9 @@ function getCurrentDepartmentNames() {
         }
 
         // show the current departments
-        // console.log(choices);
-        
+        console.log(choices);
+        // const [ name,...rest ] = choices;
+        // console.log(name, rest);
         return choices;
     });
 };
