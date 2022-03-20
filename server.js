@@ -10,8 +10,7 @@ const { userOptions, initInquirer, routeUserSelection } = require('./utils/appFu
 
 initInquirer(userOptions)
 .then( userSelectionObject => {
-    let { userInput } = userSelectionObject;
-    routeUserSelection(userInput);
+    routeUserSelection(userSelectionObject.userInput);
 })
 .catch((error) => {
     console.log('Something didnt work out', error);

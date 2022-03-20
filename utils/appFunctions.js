@@ -39,10 +39,7 @@ function viewAllDepartments() {
 
         // run inquirer again
         initInquirer(userOptions)
-        .then( userSelectionObject => {
-            let { userInput } = userSelectionObject;
-            routeUserSelection(userInput);
-        })
+        .then( userSelectionObject => routeUserSelection(userSelectionObject.userInput))
         .catch((error) => {
             console.log('Something didnt work out', error);
         });
@@ -74,10 +71,7 @@ function viewAllEmployees() {
 
         // run inquirer again
         initInquirer(userOptions)
-        .then( userSelectionObject => {
-            let { userInput } = userSelectionObject;
-            routeUserSelection(userInput);
-        })
+        .then( userSelectionObject => routeUserSelection(userSelectionObject.userInput))
         .catch((error) => {
             console.log('Something didnt work out', error);
         });
@@ -105,10 +99,7 @@ function viewAllRoles() {
 
         // run inquirer again
         initInquirer(userOptions)
-        .then( userSelectionObject => {
-            let { userInput } = userSelectionObject;
-            routeUserSelection(userInput);
-        })
+        .then( userSelectionObject => routeUserSelection(userSelectionObject.userInput))
         .catch((error) => {
             console.log('Something didnt work out', error);
         });
@@ -140,7 +131,7 @@ function addADepartment() {
         }
     ])
     .then( (departmentObject) => {
-        let { newDepartmentName } = departmentObject;
+        const { newDepartmentName } = departmentObject;
         const sql = `
         INSERT INTO 
         department (name) 
@@ -156,10 +147,7 @@ function addADepartment() {
 
             // run inquirer again
             initInquirer(userOptions)
-            .then( userSelectionObject => {
-                let { userInput } = userSelectionObject;
-                routeUserSelection(userInput);
-            })
+            .then( userSelectionObject => routeUserSelection(userSelectionObject.userInput))
             .catch((error) => {
                 console.log('Something didnt work out', error);
             });
@@ -169,109 +157,105 @@ function addADepartment() {
 }
 
 function addARole() {
-    const existingDepartments = getCurrentDepartmentNames();
+    
+    let departmentNames = [];
 
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'newRoleTitle',
-            message: 'What is the name of the new role?',
-            validate: (input) => {
-                if (input.length == 0 || input.length < 5) {
-                    console.log('The role name must be minimum 5 characters.');
-                    return false;
-                } else {
-                    return true;
-                }
-            }            
-        },
-        {
-            type: 'input',
-            name: 'newRoleSalary',
-            message: 'What is the salary for the new role?',
-            validate: (input) => {
-                if (input.length == 0 || input.length < 5) {
-                    console.log('The role salary must be minimum 5 characters.');
-                    return false;
-                } else {
-                    return true;
-                }
-            },
-            when: ( { newRoleTitle } ) => {
-                if (newRoleTitle) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }             
-        },
-        {
-            type: 'list',
-            name: 'newRoleDepartment',
-            message: 'To which department does this role belong?',
-            choices: existingDepartments,
-            when: ( { newRoleTitle } ) => {
-                if (newRoleTitle) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }             
-        }
-    ])
-    .then( (roleObject) => {
-        let { newRoleTitle, newRoleSalary, newRoleDepartment } = roleObject;
-        const sql = `
-        INSERT INTO 
-        role (title, salary, department_id) 
-        VALUES (?,?,?)`;
-
-        db.query(sql, [newRoleTitle, newRoleSalary, newRoleDepartment], (err, department) => {
-            if (err) {
-                console.log(`Error: ${err.sqlMessage} as it relates to ${err.sql}.`);
-                return;
-            }
-
-            console.log(`The role of ${newRoleTitle} in the ${newRoleDepartment} Department with a salary of ${newRoleSalary} has been created.`);
-
-            // run inquirer again
-            initInquirer(userOptions)
-            .then( userSelectionObject => {
-                let { userInput } = userSelectionObject;
-                routeUserSelection(userInput);
-            })
-            .catch((error) => {
-                console.log('Something didnt work out', error);
-            });
-        })
-    });
-}
-
-function getCurrentDepartmentNames() {
-    const sql = `
-    SELECT 
-    name
-    FROM department`;
-
-    db.query(sql, (err, choices) => {
-        if (err) {
-            console.log(`${err.sqlMessage} as it relates to ${err.sql}.`);
-            return;
-        }
-
-        const deptNameArray = choices.map( department => {
+    selectAllDepartments()
+    .then( ([departments]) => {
+        departmentNames = departments.map( department => {
             return department.name;
         });
-        console.log(deptNameArray);
-        return deptNameArray;
-    });
 
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'newRoleTitle',
+                message: 'What is the name of the new role?',
+                validate: (input) => {
+                    if (input.length == 0 || input.length < 5) {
+                        console.log('The role name must be minimum 5 characters.');
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }            
+            },
+            {
+                type: 'input',
+                name: 'newRoleSalary',
+                message: 'What is the salary for the new role?',
+                validate: (input) => {
+                    if (input.length == 0 || input.length < 5) {
+                        console.log('The role salary must be minimum 5 characters.');
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                when: ( { newRoleTitle } ) => {
+                    if (newRoleTitle) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }             
+            },
+            {
+                type: 'list',
+                name: 'newRoleDepartment',
+                message: 'To which department does this role belong?',
+                choices: departmentNames,
+                when: ( { newRoleTitle } ) => {
+                    if (newRoleTitle) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }             
+            }
+        ])
+        .then( (roleObject) => {
+            const { newRoleTitle, newRoleSalary, newRoleDepartment } = roleObject;
+            const sql = `
+            INSERT INTO 
+            role (title, salary, department_id) 
+            VALUES (?,?,?)`;
+    
+            db.promise().query(sql, [newRoleTitle, newRoleSalary, newRoleDepartment], (err, department) => {
+                if (err) {
+                    console.log(`Error: ${err.sqlMessage} as it relates to ${err.sql}.`);
+                    return;
+                }
+    
+                console.log(`The role of ${newRoleTitle} in the ${newRoleDepartment} Department with a salary of ${newRoleSalary} has been created.`);
+    
+                // run inquirer again
+                initInquirer(userOptions)
+                .then( userSelectionObject => routeUserSelection(userSelectionObject.userInput))
+                .catch((error) => {
+                    console.log('Something didnt work out:', error);
+                });
+            })
+        });
+
+    })
+    .catch(console.log)
+    // .then( () => db.end());
+}
+
+function selectAllDepartments() {
+    const sql = `
+    SELECT 
+    *
+    FROM department`;
+
+    return db.promise().query(sql);
 };
 
 function routeUserSelection(input) {
     switch (input) {
         case 'View all departments':
-            return getCurrentDepartmentNames();
+            return viewAllDepartments();
         case 'View all roles':
             return viewAllRoles();
         case 'View all employees':
