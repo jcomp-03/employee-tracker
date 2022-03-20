@@ -259,18 +259,19 @@ function getCurrentDepartmentNames() {
             return;
         }
 
-        // show the current departments
-        console.log(choices);
-        // const [ name,...rest ] = choices;
-        // console.log(name, rest);
-        return choices;
+        const deptNameArray = choices.map( department => {
+            return department.name;
+        });
+        console.log(deptNameArray);
+        return deptNameArray;
     });
+
 };
 
 function routeUserSelection(input) {
     switch (input) {
         case 'View all departments':
-            return viewAllDepartments();
+            return getCurrentDepartmentNames();
         case 'View all roles':
             return viewAllRoles();
         case 'View all employees':
