@@ -5,7 +5,7 @@ const cTable = require('console.table');
 
 
 const userOptions = [
-    // initialInput
+    // Initial et of options for user
     {
         type: 'list',
         name: 'userInput',
@@ -30,7 +30,7 @@ function viewAllDepartments() {
 
     db.query(sql, (err, departments) => {
         if (err) {
-            console.log(`${err.sqlMessage} as it relates to ${err.sql}.`);
+            console.log(`Error: ${err.sqlMessage} as it relates to ${err.sql}.`);
             return;
         }
 
@@ -168,6 +168,102 @@ function addADepartment() {
     });
 }
 
+function addARole() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newRoleTitle',
+            message: 'What is the name of the new role?',
+            validate: (input) => {
+                if (input.length == 0 || input.length < 5) {
+                    console.log('The role name must be minimum 5 characters.');
+                    return false;
+                } else {
+                    return true;
+                }
+            }            
+        },
+        {
+            type: 'input',
+            name: 'newRoleSalary',
+            message: 'What is the salary for the new role?',
+            validate: (input) => {
+                if (input.length == 0 || input.length < 5) {
+                    console.log('The role salary must be minimum 5 characters.');
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            when: ( { newRoleTitle } ) => {
+                if (newRoleTitle) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }             
+        },
+        {
+            type: 'list',
+            name: 'newRoleDepartment',
+            message: 'To which department does this role belong?',
+            choices: getCurrentDepartmentNames(),
+            when: ( { newRoleTitle } ) => {
+                if (newRoleTitle) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }             
+        }
+    ])
+    .then( (roleObject) => {
+        let { newRoleTitle, newRoleSalary, newRoleDepartment } = roleObject;
+        const sql = `
+        INSERT INTO 
+        role (title, salary, department_id) 
+        VALUES (?,?,?)`;
+
+        db.query(sql, [newRoleTitle, newRoleSalary, newRoleDepartment], (err, department) => {
+            if (err) {
+                console.log(`Error: ${err.sqlMessage} as it relates to ${err.sql}.`);
+                return;
+            }
+
+            console.log(`The role of ${newRoleTitle} in the ${newRoleDepartment} Department with a salary of ${newRoleSalary} has been created.`);
+
+            // run inquirer again
+            initInquirer(userOptions)
+            .then( userSelectionObject => {
+                let { userInput } = userSelectionObject;
+                routeUserSelection(userInput);
+            })
+            .catch((error) => {
+                console.log('Something didnt work out', error);
+            });
+        })
+    });
+}
+
+function getCurrentDepartmentNames() {
+    const sql = `
+    SELECT 
+    name
+    FROM department`;
+
+    db.query(sql, (err, choices) => {
+        if (err) {
+            console.log(`${err.sqlMessage} as it relates to ${err.sql}.`);
+            return;
+        }
+
+        // show the current departments
+        // console.log(choices);
+        
+        return choices;
+    });
+};
+
 function routeUserSelection(input) {
     switch (input) {
         case 'View all departments':
@@ -179,14 +275,11 @@ function routeUserSelection(input) {
         case 'Add a department':
             return addADepartment();
         case 'Add a role':
-            // run function AddARole
-            break;
+            return addARole();
         case 'Add an employee':
-            // run function AddAnEmployee
-            break;
+            return addAnEmployee();
         case 'Update an employee\'s role':
-            // run function updateEmployeeRole
-            break;
+            return updateEmployeeRole();
         default:
             break;
     }
