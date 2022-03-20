@@ -1,12 +1,7 @@
 /*
-WHEN I choose to view all departments
-THEN I am presented with a formatted table showing department names and department ids
-WHEN I choose to view all roles
-THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
+
 WHEN I choose to view all employees
 THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
-WHEN I choose to add a department
-THEN I am prompted to enter the name of the department and that department is added to the database
 WHEN I choose to add a role
 THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
 WHEN I choose to add an employee
@@ -14,22 +9,7 @@ THEN I am prompted to enter the employee’s first name, last name, role, and ma
 WHEN I choose to update an employee role
 THEN I am prompted to select an employee to update and their new role and this information is updated in the database */
 
-const inquirer = require('inquirer'); // import 3rd-party module
-// const db = require('./db/connection'); // import utility module
-const routeUserSelection = require('./utils/routeUserSelection'); // import utility module
-
-
-const userOptions = [
-    // initialInput
-    {
-        type: 'list',
-        name: 'userInput',
-        message: 'Welcome to the Content Management System. What would you like to do?',
-        choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee\'s role',],
-        default: 'View all departments'
-    },
-
-]
+const { userOptions, initInquirer, routeUserSelection } = require('./utils/appFunctions'); // import utility module
 
 const managerQuestions = [
     {
@@ -276,37 +256,12 @@ const managerQuestions = [
     }  */  
 ];
 
-function startInquirer() {
-    return inquirer.prompt(userOptions);
-}
 
-// startInquirer returns a Promise object, to which we chain a .then() method
-startInquirer()
+initInquirer(userOptions)
 .then( userSelectionObject => {
     let { userInput } = userSelectionObject;
     routeUserSelection(userInput);
 })
 .catch((error) => {
     console.log('Something didnt work out', error);
-});
-
-module.exports = {
-    startInquirer
-};
-
-
-/* inquirer
-  .prompt([
-
-  ])
-  .then((answers) => {
-    // Use user feedback for... whatever!!
-  })
-  .catch((error) => {
-    if (error.isTtyError) {
-      // Prompt couldn't be rendered in the current environment
-    } else {
-      // Something else went wrong
-    }
-});
- */
+}); 
