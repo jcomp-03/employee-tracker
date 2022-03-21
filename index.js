@@ -9,7 +9,8 @@ const userOptions = [
         type: 'list',
         name: 'userInput',
         message: 'Welcome to the Content Management System. What would you like to do?',
-        choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee\'s role', 'Leave/Exit the CMS'],
+        choices: ['View all departments', 'View all roles', 'View all employees', 'View employees by manager', 'Add a department', 'Add a role', 'Add an employee',
+         'Update an employee\'s role', 'Update an employee\'s manager', 'Leave/Exit the CMS'],
         default: 'View all departments'
     },
 ];
@@ -379,6 +380,57 @@ function updateEmployeeRole() {
     });
 }
 
+function updateEmployeeManager() {
+    selectAllEmployees()
+    .then( ([employeeRows]) => {
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employeeId',
+                message: 'For which employee do you wish to update their manager?',
+                choices: employeeRows.map( employee => {
+                    let fullName = employee.first_name.concat(' ', employee.last_name);
+                    return { name: fullName, value: employee.id };
+                })            
+            },
+            {
+                type: 'list',
+                name: 'newManager',
+                message: 'Whom do you wish to assign as their new manager?',
+                choices: employeeRows.map( employee => {
+                    let fullName = employee.first_name.concat(' ', employee.last_name);
+                    return { name: fullName, value: employee.id };
+                })          
+            }
+        ])
+        .then( answers => {
+            const sql = `
+            UPDATE employee
+            SET manager_id = ?
+            WHERE  
+            id = ?`;
+
+            db.query(sql, [answers.newManager, answers.employeeId], (err, role) => {
+                if (err) {
+                    console.log(`Error: ${err.sqlMessage} as it relates to ${err.sql}.`);
+                    return;
+                }
+
+                const employeeIndex = employeeRows.findIndex( employee => employee.id === answers.employeeId);
+                const managerIndex = employeeRows.findIndex ( manager => manager.id === answers.newManager);
+                console.log(`Employee ${employeeRows[employeeIndex]['first_name']} ${employeeRows[employeeIndex]['last_name']}'s manager has changed to ${employeeRows[managerIndex]['first_name']} ${employeeRows[managerIndex]['last_name']}.`);
+
+                // run inquirer again
+                initApp(userOptions)
+                .then( userSelectionObject => routeUserSelection(userSelectionObject.userInput))
+                .catch((error) => {
+                    console.log('Something didnt work out:', error);
+                });
+            });
+        });
+    });
+}
+
 function quitApp() {
     process.exit();
 };
@@ -388,7 +440,6 @@ function selectAllDepartments() {
     SELECT 
     *
     FROM department`;
-
     return db.promise().query(sql);
 };
 
@@ -397,7 +448,6 @@ function selectAllRoles() {
     SELECT 
     *
     FROM role`;
-
     return db.promise().query(sql);
 };
 
@@ -406,7 +456,6 @@ function selectAllEmployees() {
     SELECT 
     *
     FROM employee`;
-
     return db.promise().query(sql);
 };
 
@@ -426,6 +475,8 @@ function routeUserSelection(input) {
             return addAnEmployee();
         case 'Update an employee\'s role':
             return updateEmployeeRole();
+        case 'Update an employee\'s manager':
+            return updateEmployeeManager();
         case 'Leave/Exit the CMS':
             return quitApp();
         default:
