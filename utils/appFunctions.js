@@ -10,7 +10,7 @@ const userOptions = [
         type: 'list',
         name: 'userInput',
         message: 'Welcome to the Content Management System. What would you like to do?',
-        choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee\'s role',],
+        choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee\'s role', 'Leave/Exit the CMS'],
         default: 'View all departments'
     },
 
@@ -161,11 +161,8 @@ function addARole() {
     let departmentNames = [];
 
     selectAllDepartments()
-    .then( ([departments]) => {
-        departmentNames = departments.map( department => {
-            return department.name;
-        });
-
+    .then( ([rows]) => {
+        console.log('rows is:', rows);
         inquirer.prompt([
             {
                 type: 'input',
@@ -204,7 +201,9 @@ function addARole() {
                 type: 'list',
                 name: 'newRoleDepartment',
                 message: 'To which department does this role belong?',
-                choices: departmentNames,
+                choices: rows.map( row => {
+                    return { name: row.name, value: row.id };
+                }),
                 when: ( { newRoleTitle } ) => {
                     if (newRoleTitle) {
                         return true;
