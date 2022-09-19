@@ -4,7 +4,7 @@ const db = require('./db/connection'); // import utility module
 const cTable = require('console.table');
 
 const userOptions = [
-    // Initial et of options for user
+    // Initial set of options for user
     {
         type: 'list',
         name: 'userInput',
@@ -16,7 +16,7 @@ const userOptions = [
 ];
 
 function initApp(options) {
-    // initInquirer returns a Promise object, to which we chain a .then() method
+    // initApp returns a Promise object, to which we chain a .then() method
     return inquirer.prompt(options);
 };
 
